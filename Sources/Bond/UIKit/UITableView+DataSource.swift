@@ -97,8 +97,9 @@ extension SignalProtocol where Element: SectionedDataSourceChangesetConvertible,
                         + "Check that the reuseIdentifier is set properly if using XIBs or Storyboards."
                 )
             }
-            let item = dataSource.item(at: indexPath)
-            configureCell(cell, item)
+            if let item = dataSource.item(at: indexPath) {
+                configureCell(cell, item)
+            }
             return cell
         })
     }
@@ -134,8 +135,9 @@ extension SignalProtocol where Element: SectionedDataSourceChangesetConvertible,
                         + "Check that the reuseIdentifier is set properly if using XIBs or Storyboards."
                 )
             }
-            let item = dataSource.item(at: indexPath)
-            configureCell(cell, item)
+            if let item = dataSource.item(at: indexPath) {
+                configureCell(cell, item)
+            }
             return cell
         }
         return bind(to: tableView, using: binderDataSource)

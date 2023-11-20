@@ -34,7 +34,7 @@ public protocol SectionedDataSourceProtocol {
 /// A data source (a collection) whose items can be queried with `IndexPath`.
 public protocol QueryableSectionedDataSourceProtocol: SectionedDataSourceProtocol {
     associatedtype Item
-    func item(at indexPath: IndexPath) -> Item
+    func item(at indexPath: IndexPath) -> Item?
 }
 
 /// An index that can be expressed as `IndexPath`.
@@ -63,7 +63,7 @@ extension Array: QueryableSectionedDataSourceProtocol {
         return count
     }
 
-    public func item(at indexPath: IndexPath) -> Element {
+    public func item(at indexPath: IndexPath) -> Element? {
         return self[indexPath[1]]
     }
 }
@@ -98,6 +98,9 @@ extension TreeArray: SectionedDataSourceProtocol {
 extension Array2D: QueryableSectionedDataSourceProtocol {
 
     public var numberOfSections: Int {
+        if sections == nil {
+            return .zero
+        }
         return sections.count
     }
 
@@ -105,7 +108,7 @@ extension Array2D: QueryableSectionedDataSourceProtocol {
         return sections[section].items.count
     }
 
-    public func item(at indexPath: IndexPath) -> Item {
+    public func item(at indexPath: IndexPath) -> Item? {
         return self[itemAt: indexPath]
     }
 }

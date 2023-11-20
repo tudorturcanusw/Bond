@@ -24,6 +24,13 @@
 
 import Foundation
 
+extension Collection {
+    /// Returns the element at the specified index if it is within bounds, otherwise nil.
+    subscript (safe index: Index) -> Element? {
+        return indices.contains(index) ? self[index] : nil
+    }
+}
+
 public protocol Array2DProtocol: RangeReplaceableTreeProtocol where Children == [Array2D<SectionMetadata, Item>.Node] {
     associatedtype SectionMetadata
     associatedtype Item
@@ -57,8 +64,6 @@ public struct Array2D<SectionMetadata, Item>: Array2DProtocol {
     }
 }
 
-// MARK: Convenience methods
-
 extension Array2D {
 
     /// Create a new Array2D from the given list of section metadata and respective items.
@@ -68,12 +73,14 @@ extension Array2D {
     }
 
     /// Access or mutate an item at the given index path.
-    public subscript(itemAt indexPath: IndexPath) -> Item {
+    public subscript(itemAt indexPath: IndexPath) -> Item? {
         get {
-            return sections[indexPath.section].items[indexPath.item]
+            return sections[safe: indexPath.section]?.items[safe: indexPath.item]
         }
         set {
-            sections[indexPath.section].items[indexPath.item] = newValue
+            if let newValue {
+                sections[indexPath.section].items[indexPath.item] = newValue
+            }
         }
     }
 

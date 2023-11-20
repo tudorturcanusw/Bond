@@ -84,8 +84,9 @@ extension SignalProtocol where Element: SectionedDataSourceChangesetConvertible,
         }
         return bind(to: collectionView, createCell: { (dataSource, indexPath, collectionView) -> UICollectionViewCell in
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: identifier, for: indexPath) as! Cell
-            let item = dataSource.item(at: indexPath)
-            configureCell(cell, item)
+            if let item = dataSource.item(at: indexPath) {
+                configureCell(cell, item)
+            }
             return cell
         })
     }
@@ -114,8 +115,9 @@ extension SignalProtocol where Element: SectionedDataSourceChangesetConvertible,
         }
         binderDataSource.createCell = { (dataSource, indexPath, collectionView) -> UICollectionViewCell in
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: identifier, for: indexPath) as! Cell
-            let item = dataSource.item(at: indexPath)
-            configureCell(cell, item)
+            if let item = dataSource.item(at: indexPath) {
+                configureCell(cell, item)
+            }
             return cell
         }
         return bind(to: collectionView, using: binderDataSource)
