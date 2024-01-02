@@ -42,14 +42,22 @@ extension MutableChangesetContainerProtocol where Changeset: TreeChangesetProtoc
         }
     }
 
-    public subscript(sectionAt index: Int) -> Section {
+    public subscript(sectionAt index: Int) -> Section? {
         get {
-            return collection[childAt: [index]].section!
+            if collection.children.count > index {
+                return collection[childAt: [index]].section
+            }
+            return nil
+            
         }
         set {
             descriptiveUpdate { (collection) -> [Operation] in
-                collection[childAt: [index]] = .section(newValue)
-                return [.update(at: [index], newElement: .section(newValue))]
+                if let newValue {
+                    collection[childAt: [index]] = .section(newValue)
+                    return [.update(at: [index], newElement: .section(newValue))]
+                }
+                return []
+
             }
         }
     }
@@ -129,12 +137,12 @@ extension MutableChangesetContainerProtocol where Changeset: TreeChangesetProtoc
 
     /// Replace items of a section at the given index with new items.
     public func replaceItems(ofSectionAt sectionIndex: Int, with newItems: [Item]) {
-        self[sectionAt: sectionIndex].items = newItems
+        self[sectionAt: sectionIndex]?.items = newItems
     }
 
     /// Sorts the section at the given index.
     public func sortItems(ofSectionAt sectionIndex: Int, by areInIncreasingOrder: (Item, Item) throws -> Bool) rethrows {
-        let sortedItems = try self[sectionAt: sectionIndex].items.sorted(by: areInIncreasingOrder)
+        guard let sortedItems = try self[sectionAt: sectionIndex]?.items.sorted(by: areInIncreasingOrder) else { return }
         replaceItems(ofSectionAt: sectionIndex, with: sortedItems)
     }
 }
@@ -145,20 +153,22 @@ extension MutableChangesetContainerProtocol where Changeset: TreeChangesetProtoc
     /// calculate the diff between the existing and new items and emit an event with the calculated diff.
     public func replaceItems(ofSectionAt sectionIndex: Int, with newItems: [Item], performDiff: Bool) {
         guard performDiff else {
-            self[sectionAt: sectionIndex].items = newItems
+            self[sectionAt: sectionIndex]?.items = newItems
             return
         }
-        let currentItems = self[sectionAt: sectionIndex].items
-        let diff = OrderedCollectionDiff<Int>(from: currentItems.extendedDiff(newItems, isEqual: ==))
-        descriptiveUpdate { (collection) -> Diff in
-            collection[childAt: [sectionIndex]].children = newItems.map { Array2D.Node.item($0) }
-            return diff.map { [sectionIndex, $0] }
+        if let currentItems = self[sectionAt: sectionIndex]?.items {
+            let diff = OrderedCollectionDiff<Int>(from: currentItems.extendedDiff(newItems, isEqual: ==))
+                descriptiveUpdate { (collection) -> Diff in
+                    collection[childAt: [sectionIndex]].children = newItems.map { Array2D.Node.item($0) }
+                    return diff.map { [sectionIndex, $0] }
+                }
+            
         }
     }
 
     /// Sorts the section at the given index, producing a diff if requested.
     public func sortItems(ofSectionAt sectionIndex: Int, performDiff: Bool = true, by areInIncreasingOrder: (Item, Item) throws -> Bool) rethrows {
-        let sortedItems = try self[sectionAt: sectionIndex].items.sorted(by: areInIncreasingOrder)
+        guard let sortedItems = try self[sectionAt: sectionIndex]?.items.sorted(by: areInIncreasingOrder) else { return }
         replaceItems(ofSectionAt: sectionIndex, with: sortedItems, performDiff: performDiff)
     }
 
